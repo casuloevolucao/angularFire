@@ -7,7 +7,6 @@ import { Subject } from 'rxjs';
 import Swal from 'sweetalert2'
 import { Validators, FormBuilder, FormGroup, FormControl } from '@angular/forms';
 
-
 //@Auhtor ismael alves
 @Component({
   selector: 'app-body',
@@ -17,7 +16,7 @@ import { Validators, FormBuilder, FormGroup, FormControl } from '@angular/forms'
 export class BodyComponent implements OnInit {
    //formulario
   form:FormGroup = new FormGroup({
-    "id": new FormControl('', [Validators.required]),
+    "id": new FormControl(''),
     "nome": new FormControl('', [Validators.required]),
     "idade": new FormControl('', [Validators.required]),
     "foto": new FormControl(''),
@@ -37,7 +36,7 @@ export class BodyComponent implements OnInit {
   //referencia ao modal no front
   modalRef: BsModalRef;
 
-  //lista de resultado vindo da api
+  //lista de resultado vindo do firebase
   results:Lideres[] = new Array<Lideres>()
 
   //option da tabela
@@ -82,9 +81,10 @@ export class BodyComponent implements OnInit {
       pageLength: 5,
       processing: true
     }
-    this.dataS.getData().subscribe((rs:Lideres[])=>{
-      this.results = rs
-    })
+   this.dataS.getData().subscribe(rs=>{
+     this.results = rs
+     this.dtTrigger.next();
+   })
   }
 
   ngOnDestroy() {
@@ -93,10 +93,6 @@ export class BodyComponent implements OnInit {
 
   //metodo de chamada do modal
   createModal(add:TemplateRef<any>){
-    let id = this.results.length+1
-    this.form.patchValue({
-      id: id.toString(),
-    })
     this.modalRef = this.modalService.show(add);
   }
 
@@ -109,7 +105,7 @@ export class BodyComponent implements OnInit {
       foto:lideres.foto,
       contato:lideres.contato,
       email:lideres.email,
-    })
+    })//passa as informações do front para o form
     this.modalRef = this.modalService.show(edit);
   }
 
@@ -148,15 +144,14 @@ export class BodyComponent implements OnInit {
         showConfirmButton: false,
         timer: 1500
       })
-      this.ngOnInit()
-      this.modalRef.hide()
+      this.form.reset() //limpar o formulario
+      this.modalRef.hide() // fechar o modal
     })
   }
 
   //metodo criar
   create(){
     let create = new Lideres(this.form.value)
-    console.log(create)
     this.dataS.createData(create).then(rs=>{
       Swal.fire({
         position: 'top-end',
@@ -165,8 +160,8 @@ export class BodyComponent implements OnInit {
         showConfirmButton: false,
         timer: 1500
       })
-      this.ngOnInit()
-      this.modalRef.hide()
+      this.form.reset() //limpar o formulario
+      this.modalRef.hide()// fechar o modal
     })
   }
   
